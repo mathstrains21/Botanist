@@ -287,9 +287,10 @@ def get_command_pages(
         for paragraph in paragraphs:
             if count_chars(paragraph) > 2048 - threshold:
                 sentences = paragraph.split(".")
-                assert len(sentences) > 0, ValueError(
-                    "No known parsing method for this help string. Should contain at least one dot."
-                )
+                if len(sentences) <= 0:
+                    raise AssertionError(ValueError(
+                        "No known parsing method for this help string. Should contain at least one dot."
+                    ))
                 while sentences:
                     page = ""  # the page we're starting to build
                     crt_count = 2048  # how many chars are left before we need to make a new page
@@ -298,9 +299,10 @@ def get_command_pages(
                         sentence = sentences.pop(0)
                         crt_count -= count_chars(sentence)
                         # /!\ currently not handling the case of sentences larger than 2048 chars
-                        assert crt_count > 0, ValueError(
-                            "This sentence is over 2048 characters long!"
-                        )  # > and not >= because we need to add the dot again
+                        if crt_count <= 0:
+                            raise AssertionError(ValueError(
+                                "This sentence is over 2048 characters long!"
+                            ))
                         page += sentence + "."
                     pages.append(page)
 
@@ -325,8 +327,9 @@ def get_command_pages(
 def count_chars(*args: str) -> int:
     count = 0
     for string in args:
-        assert type(string) == str, TypeError(
-            f"args should be of type str not {type(string)}"
-        )
+        if type(string) != str:
+            raise AssertionError(TypeError(
+                f"args should be of type str not {type(string)}"
+            ))
         count += len(string)
     return count

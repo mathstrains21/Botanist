@@ -35,42 +35,39 @@ class RoleConfigEntry(ConfigEntry):
 
     async def run(self, ctx):
         tr = Translator(name, get_lang(ctx))
-        try:
-            await ctx.send(tr["start_conf"])
-            free_roles = []
-            pursue = await self.get_yn(ctx, tr["pursue"])
-            while pursue:
-                proles = await self.get_answer(ctx, tr["proles"])
-                roles = []
-                for role in proles.content.split(" "):
-                    try:
-                        roles.append(
-                            await discord.ext.commands.RoleConverter().convert(
-                                ctx, role
-                            )
+        await ctx.send(tr["start_conf"])
+        free_roles = []
+        pursue = await self.get_yn(ctx, tr["pursue"])
+        while pursue:
+            proles = await self.get_answer(ctx, tr["proles"])
+            roles = []
+            for role in proles.content.split(" "):
+                try:
+                    roles.append(
+                        await discord.ext.commands.RoleConverter().convert(
+                            ctx, role
                         )
-                    except:
-                        pass
-                        # raise discord.ext.commands.ArgumentParsingError(f"Couldn't find role {role}")
+                    )
+                except:
+                    pass
+                    # raise discord.ext.commands.ArgumentParsingError(f"Couldn't find role {role}")
 
-                roles_str = ""
-                for role in roles:
-                    roles_str += f" {role.name}"
-                agrees = await self.get_yn(ctx, tr["agrees"].format(roles_str))
+            roles_str = ""
+            for role in roles:
+                roles_str += f" {role.name}"
+            agrees = await self.get_yn(ctx, tr["agrees"].format(roles_str))
 
-                if not agrees:
-                    retry = await self.get_yn(ctx, tr["retry"])
-                    if retry:
-                        continue
-                    else:
-                        pursue = False
-
+            if not agrees:
+                retry = await self.get_yn(ctx, tr["retry"])
+                if retry:
+                    continue
                 else:
                     pursue = False
-                    with ConfigFile(ctx.guild.id) as conf:
-                        conf["free_roles"] = [role.id for role in roles]
-        except:
-            raise
+
+            else:
+                pursue = False
+                with ConfigFile(ctx.guild.id) as conf:
+                    conf["free_roles"] = [role.id for role in roles]
 
 
 class Role(commands.Cog):
